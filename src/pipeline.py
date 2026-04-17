@@ -113,7 +113,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-def save_to_db( dict, raw_text: str):
+def save_to_db(data: dict, raw_text: str):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT OR IGNORE INTO patients (name, dob, insurance_id) VALUES (?, ?, ?)", 
