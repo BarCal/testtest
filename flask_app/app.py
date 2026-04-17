@@ -197,6 +197,9 @@ def api_patient(patient_id):
 
 if __name__ == '__main__':
     # Initialize database
+    import sys
+    import os
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     from src.pipeline import init_db as init_pipeline_db
     init_pipeline_db()
     
