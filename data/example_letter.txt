@@ -1,0 +1,19 @@
+Arztpraxis Dr. med. Michael Fischer
+Kaiserstraße 45, 70173 Stuttgart
+Tel: 0711-33445566
+
+Patient: Lisa Schneider, geb. 17.02.1988
+Versichertennummer: C9988776655
+Untersuchungsdatum: 11.04.2026
+
+Anamnese: Seit etwa 5 Tagen Halsschmerzen und Schluckbeschwerden.
+Leicht erhöhte Temperatur bis 37,8°C, allgemeines Krankheitsgefühl.
+Kein Husten, keine Atemnot.
+Bisherige Selbstmedikation: Lutschtabletten und Tee, geringe Besserung.
+
+Diagnose: Akute Pharyngitis (ICD-10: J02.9)
+Allergien: Penicillinallergie bekannt
+Medikation: Paracetamol 500 mg bei Bedarf, maximal 4x täglich
+
+Empfehlung: Viel trinken, Schonung, warme Halswickel,
+bei Verschlechterung oder anhaltenden Beschwerden nach 5 Tagen erneute Vorstellung.

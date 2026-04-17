@@ -1,0 +1,17 @@
+Arztpraxis Dr. med. Thomas Berger
+Klinikstraße 8, 80331 München
+Tel: 089-12345678
+
+Patient: Markus Weber, geb. 12.05.1982
+Versichertennummer: D9876543210
+Untersuchungsdatum: 14.04.2026
+
+Anamnese: Seit ca. 4 Wochen zunehmende Kopfschmerzen frontal, besonders morgens. 
+Leichter Schwindel bei schnellem Aufstehen. Keine Sehstörungen. 
+Bisherige Selbstmedikation: Ibuprofen 400mg bei Bedarf.
+
+Diagnose: Essentielle Hypertonie (ICD-10: I10)
+Allergien: Keine bekannt
+Medikation: Ramipril 5mg, 1x täglich morgens, Start: 14.04.2026
+Empfehlung: Blutdruckkontrolle zu Hause, Kontrolltermin in 4 Wochen, 
+Natriumreduktion, regelmäßige Bewegung.

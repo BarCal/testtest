@@ -1,0 +1,27 @@
+{
+  "patient_name": "Markus Weber",
+  "dob": "12.05.1982",
+  "insurance_id": "D9876543210",
+  "visit_date": "14.04.2026",
+  "diagnoses": [
+    "Essentielle Hypertonie (ICD-10: I10)"
+  ],
+  "symptoms": [
+    "Zunehmende Kopfschmerzen frontal",
+    "Schwindel bei schnellem Aufstehen"
+  ],
+  "medications": [
+    {
+      "name": "Ramipril 5mg",
+      "dosage": "1x täglich morgens",
+      "frequency": "1 keer per dag op morgen"
+    }
+  ],
+  "allergies": [],
+  "recommendations": [
+    "Blutdruckkontrolle zu Hause",
+    "Kontrolltermin in 4 Wochen",
+    "Natriumreduktion",
+    "Regelmäßige Bewegung"
+  ]
+}
