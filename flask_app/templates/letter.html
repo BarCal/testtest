@@ -58,37 +58,6 @@
         </div>
     </div>
 
-    <!-- Results Section -->
-    {% if success %}
-    <div class="result-card success">
-        <div class="result-icon">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="result-content">
-            <h3>Success!</h3>
-            <p>{{ success }}</p>
-            <a href="{{ url_for('search') }}" class="btn-primary">
-                <i class="fas fa-search"></i> View Patients
-            </a>
-        </div>
-    </div>
-    {% endif %}
-
-    {% if error %}
-    <div class="result-card error">
-        <div class="result-icon">
-            <i class="fas fa-exclamation-circle"></i>
-        </div>
-        <div class="result-content">
-            <h3>Processing Error</h3>
-            <p>{{ error }}</p>
-            <button onclick="document.getElementById('uploadForm').reset(); document.getElementById('selectedFile').style.display='none'; document.getElementById('dropArea').style.display='flex';" class="btn-secondary">
-                <i class="fas fa-redo"></i> Try Again
-            </button>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- Information Cards -->
     <div class="info-cards-grid">
         <div class="info-card-small">
@@ -127,6 +96,7 @@ const fileName = document.getElementById('fileName');
 const removeFile = document.getElementById('removeFile');
 const processingSection = document.getElementById('processingSection');
 const uploadForm = document.getElementById('uploadForm');
+const submitBtn = document.getElementById('submitBtn');
 
 // Drag and drop handlers
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -182,14 +152,95 @@ removeFile.addEventListener('click', () => {
     dropArea.style.display = 'flex';
 });
 
-// Form submission with loading state
+// Form submission with AJAX
 uploadForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (!fileInput.files.length) {
+        alert('Please select a file first');
+        return;
+    }
+    
     // Show processing section
     processingSection.style.display = 'block';
     document.querySelector('.upload-card').style.display = 'none';
     document.querySelectorAll('.result-card').forEach(el => el.style.display = 'none');
     
-    // Note: The form will submit normally and reload the page with results
+    // Create FormData and send via AJAX
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    fetch('/letter', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        processingSection.style.display = 'none';
+        document.querySelector('.upload-card').style.display = 'block';
+        
+        // Reset form
+        uploadForm.reset();
+        selectedFile.style.display = 'none';
+        dropArea.style.display = 'flex';
+        
+        if (data.success) {
+            // Show success message
+            const successHtml = `
+                <div class="result-card success" style="display: block;">
+                    <div class="result-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="result-content">
+                        <h3>Success!</h3>
+                        <p>${data.success}</p>
+                        <a href="/search" class="btn-primary">
+                            <i class="fas fa-search"></i> View Patients
+                        </a>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.upload-container').insertAdjacentHTML('afterend', successHtml);
+        } else if (data.error) {
+            // Show error message
+            const errorHtml = `
+                <div class="result-card error" style="display: block;">
+                    <div class="result-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="result-content">
+                        <h3>Processing Error</h3>
+                        <p>${data.error}</p>
+                        <button onclick="this.closest('.result-card').remove()" class="btn-secondary">
+                            <i class="fas fa-times"></i> Dismiss
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.upload-container').insertAdjacentHTML('afterend', errorHtml);
+        }
+    })
+    .catch(error => {
+        processingSection.style.display = 'none';
+        document.querySelector('.upload-card').style.display = 'block';
+        
+        const errorHtml = `
+            <div class="result-card error" style="display: block;">
+                <div class="result-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="result-content">
+                    <h3>Connection Error</h3>
+                    <p>Failed to process the file. Please try again.</p>
+                    <button onclick="this.closest('.result-card').remove()" class="btn-secondary">
+                        <i class="fas fa-times"></i> Dismiss
+                    </button>
+                </div>
+            </div>
+        `;
+        document.querySelector('.upload-container').insertAdjacentHTML('afterend', errorHtml);
+        console.error('Error:', error);
+    });
 });
 </script>
 {% endblock %}
