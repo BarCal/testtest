@@ -87,57 +87,56 @@ def patient_detail(patient_id):
 @app.route('/letter', methods=['GET', 'POST'])
 def letter():
     """Doctoral letter upload and processing page"""
+    if request.method == 'GET':
+        return render_template('letter.html', error=None, success=None, result=None)
+    
+    # POST request - handle file upload via AJAX
     error = None
-    success = None
-    result = None
+    result_data = None
     
-    if request.method == 'POST':
-        # Check if file was uploaded
-        if 'file' not in request.files:
-            error = "No file selected"
+    # Check if file was uploaded
+    if 'file' not in request.files:
+        return jsonify({'error': "No file selected"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': "No file selected"}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({'error': "File type not allowed. Please upload a .txt file."}), 400
+    
+    # Initialize model if not already done
+    try:
+        init_model()
+    except Exception as e:
+        return jsonify({'error': f"Failed to load model: {str(e)}"}), 500
+    
+    # Save file temporarily
+    filename = secure_filename(file.filename)
+    filepath = app.config['UPLOAD_FOLDER'] / filename
+    file.save(filepath)
+    
+    # Read file content
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            raw_text = f.read()
+        
+        # Process the letter
+        result = process_letter(raw_text, tokenizer, model, device)
+        
+        # Clean up uploaded file
+        filepath.unlink()
+        
+        if result.startswith("✅"):
+            return jsonify({'success': result})
         else:
-            file = request.files['file']
-            if file.filename == '':
-                error = "No file selected"
-            elif file and allowed_file(file.filename):
-                # Initialize model if not already done
-                try:
-                    init_model()
-                except Exception as e:
-                    error = f"Failed to load model: {str(e)}"
-                
-                if not error:
-                    # Save file temporarily
-                    filename = secure_filename(file.filename)
-                    filepath = app.config['UPLOAD_FOLDER'] / filename
-                    file.save(filepath)
-                    
-                    # Read file content
-                    try:
-                        with open(filepath, 'r', encoding='utf-8') as f:
-                            raw_text = f.read()
-                        
-                        # Process the letter
-                        result = process_letter(raw_text, tokenizer, model, device)
-                        
-                        if result.startswith("✅"):
-                            success = result
-                            result = None
-                        else:
-                            error = result
-                            result = None
-                        
-                        # Clean up uploaded file
-                        filepath.unlink()
-                        
-                    except Exception as e:
-                        error = f"Error processing file: {str(e)}"
-                        if filepath.exists():
-                            filepath.unlink()
-            else:
-                error = "File type not allowed. Please upload a .txt file."
-    
-    return render_template('letter.html', error=error, success=success, result=result)
+            return jsonify({'error': result}), 400
+        
+    except Exception as e:
+        error = f"Error processing file: {str(e)}"
+        if filepath.exists():
+            filepath.unlink()
+        return jsonify({'error': error}), 500
 
 @app.route('/api/search')
 def api_search():
