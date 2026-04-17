@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.name }} - Patient Information{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('search') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Search
+    </a>
+    <h1><i class="fas fa-user-injured"></i> Patient Information</h1>
+</div>
+
+<div class="patient-detail-container">
+    <!-- Patient Overview Card -->
+    <div class="overview-card">
+        <div class="overview-header">
+            <div class="patient-avatar-large">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="patient-name-section">
+                <h2>{{ patient.name }}</h2>
+                <p class="insurance-badge">{{ patient.insurance_id }}</p>
+            </div>
+        </div>
+        
+        <div class="overview-stats">
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Date of Birth</span>
+                    <span class="stat-value">{{ patient.dob }}</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-file-medical-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Documents</span>
+                    <span class="stat-value">{{ documents|length }}</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-notes-medical"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Medical Entities</span>
+                    <span class="stat-value">{{ entities|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Information Grid -->
+    <div class="medical-info-grid">
+        <!-- Diagnoses -->
+        <div class="info-card">
+            <div class="card-title">
+                <i class="fas fa-stethoscope"></i>
+                <h3>Diagnoses</h3>
+            </div>
+            <div class="card-content">
+                {% set diagnoses = entities | selectattr('entity_type', 'equalto', 'Diagnose') | list %}
+                {% if diagnoses %}
+                    <ul class="medical-list">
+                        {% for diag in diagnoses %}
+                        <li>
+                            <span class="badge diagnosis">{{ diag.entity_value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-data">No diagnoses recorded</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="info-card">
+            <div class="card-title">
+                <i class="fas fa-thermometer-three-quarters"></i>
+                <h3>Symptoms</h3>
+            </div>
+            <div class="card-content">
+                {% set symptoms = entities | selectattr('entity_type', 'equalto', 'Symptom') | list %}
+                {% if symptoms %}
+                    <ul class="medical-list">
+                        {% for symp in symptoms %}
+                        <li>
+                            <span class="badge symptom">{{ symp.entity_value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-data">No symptoms recorded</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Medications -->
+        <div class="info-card">
+            <div class="card-title">
+                <i class="fas fa-pills"></i>
+                <h3>Medications</h3>
+            </div>
+            <div class="card-content">
+                {% set meds = entities | selectattr('entity_type', 'equalto', 'Medikament') | list %}
+                {% if meds %}
+                    <ul class="medical-list">
+                        {% for med in meds %}
+                        <li>
+                            <span class="badge medication">{{ med.entity_value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-data">No medications prescribed</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Allergies -->
+        <div class="info-card">
+            <div class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Allergies</h3>
+            </div>
+            <div class="card-content">
+                {% set allergies = entities | selectattr('entity_type', 'equalto', 'Allergie') | list %}
+                {% if allergies %}
+                    <ul class="medical-list">
+                        {% for allergy in allergies %}
+                        <li>
+                            <span class="badge allergy">{{ allergy.entity_value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-data">No allergies recorded</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="info-card full-width">
+            <div class="card-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h3>Recommendations</h3>
+            </div>
+            <div class="card-content">
+                {% set recs = entities | selectattr('entity_type', 'equalto', 'Empfehlung') | list %}
+                {% if recs %}
+                    <ul class="recommendations-list">
+                        {% for rec in recs %}
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ rec.entity_value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-data">No recommendations given</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Section -->
+    <div class="documents-section">
+        <div class="section-header">
+            <i class="fas fa-folder-open"></i>
+            <h2>Medical Documents</h2>
+        </div>
+        
+        {% if documents %}
+            <div class="documents-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <div class="doc-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="doc-info">
+                        <h4>Visit on {{ doc.visit_date }}</h4>
+                        <p class="doc-date">Uploaded: {{ doc.visit_date }}</p>
+                    </div>
+                    <div class="doc-actions">
+                        <button class="btn-view" onclick="viewDocument({{ doc.id }})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-data">No documents available</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewDocument(docId) {
+    // Future implementation: show document modal or navigate to document view
+    alert('Document viewing feature coming soon. Document ID: ' + docId);
+}
+</script>
+{% endblock %}

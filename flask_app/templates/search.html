@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Search Patients - Medical Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-search"></i> Patient Search</h1>
+    <p>Search and view all registered patients</p>
+</div>
+
+<div class="search-container">
+    <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search by name, insurance ID, or date of birth..." autocomplete="off">
+    </div>
+</div>
+
+<div class="patients-grid" id="patientsGrid">
+    {% if patients %}
+        {% for patient in patients %}
+        <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="patient-card">
+            <div class="card-header">
+                <div class="patient-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="patient-info">
+                    <h3>{{ patient.name }}</h3>
+                    <p class="insurance-id">{{ patient.insurance_id }}</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <i class="fas fa-calendar"></i>
+                    <span>Date of Birth: {{ patient.dob }}</span>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-id-card"></i>
+                    <span>ID: {{ patient.insurance_id }}</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="view-details">View Details <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <div class="no-patients">
+            <i class="fas fa-inbox"></i>
+            <h3>No Patients Found</h3>
+            <p>Upload a doctoral letter to add your first patient</p>
+            <a href="{{ url_for('letter') }}" class="btn-primary">
+                <i class="fas fa-upload"></i> Upload Letter
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Real-time search functionality
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const query = e.target.value.trim();
+    
+    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(patients => {
+            const grid = document.getElementById('patientsGrid');
+            
+            if (patients.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-patients">
+                        <i class="fas fa-search"></i>
+                        <h3>No Results Found</h3>
+                        <p>Try adjusting your search terms</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = patients.map(patient => `
+                <a href="/patient/${patient.id}" class="patient-card">
+                    <div class="card-header">
+                        <div class="patient-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="patient-info">
+                            <h3>${patient.name}</h3>
+                            <p class="insurance-id">${patient.insurance_id}</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <i class="fas fa-calendar"></i>
+                            <span>Date of Birth: ${patient.dob}</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-id-card"></i>
+                            <span>ID: ${patient.insurance_id}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="view-details">View Details <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+        });
+});
+</script>
+{% endblock %}

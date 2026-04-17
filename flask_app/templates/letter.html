@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Doctoral Letter - Medical Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-medical"></i> Doctoral Letter</h1>
+    <p>Upload and process medical letters to extract patient information</p>
+</div>
+
+<div class="upload-container">
+    <!-- Upload Section -->
+    <div class="upload-card">
+        <div class="upload-header">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h2>Upload Medical Letter</h2>
+            <p>Supported format: .txt files</p>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <div class="file-drop-area" id="dropArea">
+                <div class="drop-icon">
+                    <i class="fas fa-file-upload"></i>
+                </div>
+                <div class="drop-message">
+                    <strong>Click to upload</strong> or drag and drop
+                    <span>Maximum file size: 16MB</span>
+                </div>
+                <input type="file" name="file" id="fileInput" accept=".txt" required>
+            </div>
+            
+            <div class="selected-file" id="selectedFile" style="display: none;">
+                <i class="fas fa-file-alt"></i>
+                <span class="filename" id="fileName"></span>
+                <button type="button" class="remove-file" id="removeFile">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <i class="fas fa-magic"></i> Process Letter
+            </button>
+        </form>
+    </div>
+
+    <!-- Processing Status -->
+    <div class="processing-section" id="processingSection" style="display: none;">
+        <div class="processing-card">
+            <div class="processing-spinner">
+                <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+            <h3>Processing Document...</h3>
+            <p>Our AI is extracting patient information from the letter</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p class="processing-time">This may take 30-60 seconds</p>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    {% if success %}
+    <div class="result-card success">
+        <div class="result-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="result-content">
+            <h3>Success!</h3>
+            <p>{{ success }}</p>
+            <a href="{{ url_for('search') }}" class="btn-primary">
+                <i class="fas fa-search"></i> View Patients
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="result-card error">
+        <div class="result-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="result-content">
+            <h3>Processing Error</h3>
+            <p>{{ error }}</p>
+            <button onclick="document.getElementById('uploadForm').reset(); document.getElementById('selectedFile').style.display='none'; document.getElementById('dropArea').style.display='flex';" class="btn-secondary">
+                <i class="fas fa-redo"></i> Try Again
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Information Cards -->
+    <div class="info-cards-grid">
+        <div class="info-card-small">
+            <div class="info-icon blue">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h4>AI-Powered</h4>
+            <p>Advanced machine learning extracts data accurately</p>
+        </div>
+        
+        <div class="info-card-small">
+            <div class="info-icon green">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h4>Secure</h4>
+            <p>All data is stored securely in local database</p>
+        </div>
+        
+        <div class="info-card-small">
+            <div class="info-icon purple">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h4>Fast</h4>
+            <p>Process letters in under a minute</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropArea = document.getElementById('dropArea');
+const fileInput = document.getElementById('fileInput');
+const selectedFile = document.getElementById('selectedFile');
+const fileName = document.getElementById('fileName');
+const removeFile = document.getElementById('removeFile');
+const processingSection = document.getElementById('processingSection');
+const uploadForm = document.getElementById('uploadForm');
+
+// Drag and drop handlers
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight() {
+    dropArea.classList.add('highlight');
+}
+
+function unhighlight() {
+    dropArea.classList.remove('highlight');
+}
+
+dropArea.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    handleFiles();
+}
+
+dropArea.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', handleFiles);
+
+function handleFiles() {
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName.textContent = file.name;
+        dropArea.style.display = 'none';
+        selectedFile.style.display = 'flex';
+    }
+}
+
+removeFile.addEventListener('click', () => {
+    fileInput.value = '';
+    selectedFile.style.display = 'none';
+    dropArea.style.display = 'flex';
+});
+
+// Form submission with loading state
+uploadForm.addEventListener('submit', function(e) {
+    // Show processing section
+    processingSection.style.display = 'block';
+    document.querySelector('.upload-card').style.display = 'none';
+    document.querySelectorAll('.result-card').forEach(el => el.style.display = 'none');
+    
+    // Note: The form will submit normally and reload the page with results
+});
+</script>
+{% endblock %}
