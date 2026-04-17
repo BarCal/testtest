@@ -22,11 +22,16 @@ st.sidebar.header("📤 Dokument hochladen")
 uploaded_file = st.sidebar.file_uploader("Wählen Sie eine .txt-Datei:", type=["txt"])
 
 if uploaded_file is not None:
-    with st.spinner("🔄 Verarbeite Dokument..."):
-        raw_text = uploaded_file.read().decode("utf-8")
-        result = process_letter(raw_text, tokenizer, model, device)
-        st.sidebar.success(result)
-        st.rerun()
+    # Check if this file was already processed
+    if "last_processed_file" not in st.session_state or st.session_state.last_processed_file != uploaded_file.name:
+        with st.spinner("🔄 Verarbeite Dokument..."):
+            raw_text = uploaded_file.read().decode("utf-8")
+            result = process_letter(raw_text, tokenizer, model, device)
+            st.session_state.last_processed_file = uploaded_file.name
+            st.session_state.process_result = result
+        st.sidebar.success(st.session_state.process_result)
+    elif "process_result" in st.session_state:
+        st.sidebar.success(st.session_state.process_result)
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db" / "med_data.db"
