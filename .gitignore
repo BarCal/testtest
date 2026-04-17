@@ -1,1 +1,38 @@
-Nothing should be ignored since only a Python source file (`ui/app.py`) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
+```
+# Dependencies
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Build/dist
+dist/
+build/
+target/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+```
