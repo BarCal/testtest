@@ -29,27 +29,20 @@ def extract_json(text: str, tokenizer, model, device: str) -> dict:
     print("🔍 Starting extraction...")
     start_time = time.time()
     
-    # Clear, example-driven prompt with NO placeholders in schema
-    prompt = f"""Du bist ein medizinischer Datenassistent. Deine AUFGABE: Lies den folgenden deutschen Arztbrief und extrahiere die Informationen. Antworte NUR mit einem gültigen JSON-Objekt. Kein Markdown, kein erklärender Text.
+    # Clear prompt with explicit instructions - NO example values that could be copied
+    prompt = f"""Du bist ein medizinischer Datenassistent. Lies den folgenden deutschen Arztbrief und extrahiere ALLE Informationen als JSON.
 
-WICHTIG: Ersetze alle Platzhalter durch die TATSÄCHLICHEN Werte aus dem Brief. Wenn ein Feld nicht vorhanden ist, verwende null oder eine leere Liste [].
+REGELN:
+- Antworte NUR mit einem gültigen JSON-Objekt, kein Markdown, kein erklärender Text
+- Verwende die TATSÄCHLICHEN Werte aus dem Brief, KEINE Platzhalter
+- Wenn ein Feld fehlt, verwende null oder []
 
-Beispiel-Antwort (so soll deine Ausgabe aussehen):
-{{
-  "patient_name": "Max Mustermann",
-  "dob": "03.09.1975",
-  "insurance_id": "A1234567890",
-  "visit_date": "10.04.2026",
-  "diagnoses": ["Akute Bronchitis (ICD-10: J20.9)"],
-  "symptoms": ["trockener Husten", "Atemnot bei Belastung"],
-  "medications": [{{"name": "Ambroxol 30mg", "dosage": "3x täglich", "frequency": "3x täglich"}}],
-  "allergies": ["Pollenallergie"],
-  "recommendations": ["Viel Flüssigkeitszufuhr", "Körperliche Schonung"]
-}}
+Extrahiere diese Felder: patient_name, dob, insurance_id, visit_date, diagnoses[], symptoms[], medications[] (mit name/dosage), allergies[], recommendations[]
 
-Jetzt extrahiere aus diesem Arztbrief:
+ARZTBRIEF:
 {text}
-"""
+
+JSON-Antwort:"""
     
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
     
@@ -140,8 +133,15 @@ def process_letter(raw_text: str, tokenizer, model, device: str) -> str:
         data = extract_json(raw_text, tokenizer, model, device)
         
         # Validate: check if model returned placeholders instead of real values
-        if data.get("patient_name") == "string" or data.get("dob") == "DD.MM.YYYY":
-            return "❌ Model returned template placeholders instead of extracted values. Try a clearer prompt or larger model."
+        placeholder_indicators = ["string", "DD.MM.YYYY", "[NAME", "[DATUM", "[VERSICHERUNG", "[BESUCHSDATUM"]
+        for field in ["patient_name", "dob", "insurance_id"]:
+            val = data.get(field, "")
+            if val and any(ph in str(val) for ph in placeholder_indicators):
+                return "❌ Model returned template placeholders instead of extracted values."
+        
+        # Also check if it's returning the same hardcoded example (Max Mustermann)
+        if data.get("patient_name") == "Max Mustermann" and "A1234567890" in str(data.get("insurance_id", "")):
+            return "❌ Model is returning example data instead of extracting from the letter. The prompt needs adjustment."
         
         required = ["patient_name", "insurance_id", "visit_date"]
         missing = [k for k in required if not data.get(k)]
